@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>密码工坊 | Material 3</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="app">
+  <header class="top-app-bar">
+    <div>
+      <h1>🔐 <span data-i18n="app_title">密码工坊</span> <span class="version-badge">v4.3</span></h1>
+      <div class="subtitle" id="conn-status" data-i18n="backend_checking">正在检测后端连接...</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="lang-btn" id="lang-btn" title="Switch language">EN</button>
+      <div class="theme-chips">
+      <div class="theme-chip active" style="background:#6750A4" data-theme="purple" title="紫罗兰"></div>
+      <div class="theme-chip" style="background:#005AC1" data-theme="blue" title="海洋蓝"></div>
+      <div class="theme-chip" style="background:#006E2A" data-theme="green" title="森林绿"></div>
+      <div class="theme-chip" style="background:#B5004C" data-theme="rose" title="玫瑰红"></div>
+      <div class="theme-chip" style="background:#964900" data-theme="orange" title="暖橙"></div>
+    </div>
+  </header>
+
+  <nav class="tab-nav" id="tab-nav">
+    <button class="tab-btn active" data-target="password" data-i18n="tab_random">随机密码</button>
+    <button class="tab-btn" data-target="passphrase" data-i18n="tab_passphrase">短语密码</button>
+    <button class="tab-btn" data-target="hash" data-i18n="tab_hash">哈希计算</button>
+    <button class="tab-btn" data-target="analyze" data-i18n="tab_analyze">强度分析</button>
+  </nav>
+
+  <main>
+    <!-- 随机密码 -->
+    <section class="panel active" id="tab-password">
+      <div class="card">
+        <h2 data-i18n="tab_random">随机密码生成</h2>
+        <div class="field">
+          <div class="field-label"><span data-i18n="pw_length">密码长度</span><span class="field-value" id="pw-len-val">16</span></div>
+          <input type="range" id="pw-len" min="8" max="128" value="16">
+        </div>
+        <div class="checkboxes" id="pw-options">
+          <label class="check-item checked"><input type="checkbox" checked data-key="lower"><span data-i18n="opt_lower">小写字母 (a-z)</span></label>
+          <label class="check-item checked"><input type="checkbox" checked data-key="upper"><span data-i18n="opt_upper">大写字母 (A-Z)</span></label>
+          <label class="check-item checked"><input type="checkbox" checked data-key="digits"><span data-i18n="opt_digits">数字 (0-9)</span></label>
+          <label class="check-item checked"><input type="checkbox" checked data-key="special"><span data-i18n="opt_special">特殊符号 (!@#...)</span></label>
+          <label class="check-item"><input type="checkbox" data-key="avoid"><span data-i18n="opt_avoid">排除易混字符 (0O1lI)</span></label>
+        </div>
+        <button class="btn" id="btn-gen-pw">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path></svg>
+          <span data-i18n="btn_generate_pw">生成随机密码</span>
+        </button>
+        <div class="result-card" id="pw-result" style="display:none">
+          <div class="result-head">
+            <div class="password-display" id="pw-text"></div>
+            <button class="icon-btn" id="copy-pw" title="复制">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+          </div>
+          <div class="entropy-bar-wrap">
+            <div class="entropy-meta"><span class="entropy-label" data-i18n="entropy_full">熵值 (Entropy)</span><span class="entropy-value" id="pw-entropy"></span></div>
+            <div class="entropy-bar-bg"><div class="entropy-bar-fill" id="pw-bar"></div></div>
+            <span class="strength-badge" id="pw-badge"></span>
+          </div>
+          <button class="btn-secondary" id="verify-pw">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span data-i18n="verify_strength">验证强度</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 短语密码 -->
+    <section class="panel" id="tab-passphrase">
+      <div class="card">
+        <h2 data-i18n="tab_passphrase">短语密码生成</h2>
+        <div class="field">
+          <div class="field-label"><span data-i18n="pp_count">单词数量</span><span class="field-value" id="pp-count-val">6</span></div>
+          <input type="range" id="pp-count" min="4" max="48" value="6">
+        </div>
+        <div class="field">
+          <div class="field-label"><span data-i18n="pp_sep">分隔符</span></div>
+          <div class="sep-options" id="pp-sep">
+            <div class="sep-chip active" data-sep="-"><span data-i18n="sep_hyphen">连字符 -</span></div>
+            <div class="sep-chip" data-sep="_"><span data-i18n="sep_underscore">下划线 _</span></div>
+            <div class="sep-chip" data-sep=" "><span data-i18n="sep_space">空格</span></div>
+            <div class="sep-chip" data-sep="."><span data-i18n="sep_dot">句点 .</span></div>
+            <div class="sep-chip" data-sep=""><span data-i18n="sep_none">无分隔符</span></div>
+          </div>
+        </div>
+        <div class="checkboxes">
+          <label class="check-item"><input type="checkbox" id="pp-title"><span data-i18n="opt_title">首字母大写 (Title Case)</span></label>
+          <label class="check-item"><input type="checkbox" id="pp-num"><span data-i18n="opt_number">随机插入数字</span></label>
+        </div>
+        <button class="btn" id="btn-gen-pp">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span data-i18n="btn_generate_pp">生成短语密码</span>
+        </button>
+        <div class="result-card" id="pp-result" style="display:none">
+          <div class="entropy-meta" style="margin-bottom:8px">
+            <span class="entropy-label" id="pp-candidates-label" data-i18n="candidates">候选结果（共 5 条）</span><span class="entropy-value" id="pp-entropy"></span>
+          </div>
+          <div class="list-results" id="pp-list"></div>
+          <span class="strength-badge" id="pp-badge" style="margin-top:10px"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 哈希计算 -->
+    <section class="panel" id="tab-hash">
+      <div class="card">
+        <h2 data-i18n="tab_hash">哈希值计算</h2>
+        <div class="field">
+          <div class="field-label"><span data-i18n="hash_input_label">输入内容</span></div>
+          <input type="text" class="text-input" id="hash-input" data-i18n-ph="hash_placeholder" placeholder="在此输入要计算哈希的文本...">
+          <div class="hint" data-i18n="hash_hint">支持任意字符，按 UTF-8 编码计算</div>
+        </div>
+        <button class="btn" id="btn-hash"><span data-i18n="btn_hash">计算哈希值</span></button>
+        <div class="result-card" id="hash-result" style="display:none">
+          <table class="crack-table" id="hash-table"></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 强度分析 -->
+    <section class="panel" id="tab-analyze">
+      <div class="card">
+        <h2 data-i18n="tab_analyze">密码强度分析</h2>
+        <div class="field">
+          <div class="field-label"><span data-i18n="analyze_label">待分析密码</span></div>
+          <input type="text" class="text-input" id="analyze-input" data-i18n-ph="analyze_placeholder" placeholder="输入密码进行强度与破解时间分析...">
+          <div class="hint" data-i18n="analyze_hint">分析结果基于字符集/词库与长度的理论估算</div>
+        </div>
+        <button class="btn" id="btn-analyze"><span data-i18n="btn_analyze">分析强度</span></button>
+        <div class="result-card" id="analyze-result" style="display:none">
+          <div id="common-warn" class="common-warn" data-i18n="common_warn">⚠️ 此密码在常见弱密码黑名单中，可被瞬间破解！请立即更换。</div>
+          <div class="an-meta">
+            <div><div class="entropy-label" data-i18n="len">长度</div><div class="entropy-value" id="an-len"></div></div>
+            <div><div class="entropy-label" data-i18n="entropy">熵值</div><div class="entropy-value" id="an-entropy"></div></div>
+            <div><div class="entropy-label" data-i18n="rating">评级</div><span class="strength-badge" id="an-badge"></span></div>
+          </div>
+          <div class="entropy-bar-wrap"><div class="entropy-bar-bg"><div class="entropy-bar-fill" id="an-bar"></div></div></div>
+          <div class="crack-title" data-i18n="crack_title">预计破解所需时间</div>
+          <table class="crack-table" id="crack-table"></table>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast">已复制</div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
