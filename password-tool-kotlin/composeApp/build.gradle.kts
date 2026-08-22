@@ -61,7 +61,7 @@ compose.desktop {
         mainClass = "com.passwordtool.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Zip, TargetFormat.Deb)
+            targetFormats(TargetFormat.Msi, TargetFormat.Deb)
             packageName = "password-tool"
             packageVersion = "1.0.0"
             description = "密码生成与强度分析工具"
